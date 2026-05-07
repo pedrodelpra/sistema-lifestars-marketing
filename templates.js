@@ -476,7 +476,10 @@ export const Templates = {
 
     conteudo: (state) => {
         const months = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
-        const viewDate = state.calendarViewDate || new Date();
+        let viewDate = state.calendarViewDate;
+        if (!viewDate || !(viewDate instanceof Date)) {
+            viewDate = new Date();
+        }
         const currentMonthIdx = viewDate.getMonth();
         const currentYear = viewDate.getFullYear();
         const currentMonthName = months[currentMonthIdx];
@@ -524,14 +527,14 @@ export const Templates = {
             const dateStr = `${currentYear}-${currentMonthIdx + 1}-${day}`;
             
             const allEvents = [
-                ...recurring.map(r => {
-                    const isCompleted = (r.completedDates || []).includes(dateStr);
+                ...(recurring || []).map(r => {
+                    const isCompleted = (r?.completedDates || []).includes(dateStr);
                     return { ...r, source: 'recurring', isCompleted };
                 }),
-                ...manual.map(m => ({ ...m, source: 'manual', isCompleted: m.completed })),
-                ...kanbanFiltered.map(k => {
-                    const isCompleted = state.kanban?.[3]?.tasks?.some(t => String(t.id) === String(k.id)) || false;
-                    return { title: k.title, type: k.type || 'post', source: 'kanban', id: k.id, isCompleted };
+                ...(manual || []).map(m => ({ ...m, source: 'manual', isCompleted: !!m?.completed })),
+                ...(kanbanFiltered || []).map(k => {
+                    const isCompleted = state.kanban?.[3]?.tasks?.some(t => String(t?.id) === String(k?.id)) || false;
+                    return { title: k?.title || 'Sem título', type: k?.type || 'post', source: 'kanban', id: k?.id, isCompleted };
                 })
             ];
 

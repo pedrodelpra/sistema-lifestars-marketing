@@ -79,7 +79,10 @@ const DriveManager = {
                     }
                 });
                 console.log("Sincronização concluída: Dados da nuvem carregados.");
-                renderPage(State.activePage || 'dashboard');
+                const currentPage = State.activePage || 'dashboard';
+                // Force a full re-render by navigating to current page
+                window.navigate(currentPage);
+                updateSidebarProfile();
             } else {
                 console.log("Arquivo de estado não encontrado no Drive.");
                 // Só salva se o estado local não estiver vazio (para não apagar dados por engano)
