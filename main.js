@@ -60,7 +60,7 @@ const DriveManager = {
             const listData = await response.json();
 
             if (listData.files && listData.files.length > 0) {
-                const fileId = response.result.files[0].id;
+                const fileId = listData.files[0].id;
                 const fileResp = await fetch(`https://www.googleapis.com/drive/v3/files/${fileId}?alt=media`, {
                     headers: { 'Authorization': 'Bearer ' + window.accessToken }
                 });
