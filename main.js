@@ -47,6 +47,9 @@ const DriveManager = {
 
     async syncWithCloud() {
         if (!window.accessToken) return;
+        const overlay = document.getElementById('sync-overlay');
+        if (overlay) overlay.style.display = 'flex';
+
         try {
             console.log("Iniciando sincronização com Google Drive...");
             const rootId = await this.getOrCreateFolder('LifeStars_MarketingOS');
@@ -89,6 +92,8 @@ const DriveManager = {
             }
         } catch (err) {
             console.error("Erro crítico na sincronização:", err);
+        } finally {
+            if (overlay) overlay.style.display = 'none';
         }
     },
     async saveStateToCloud() {
@@ -274,20 +279,10 @@ const State = {
     ],
     personas: JSON.parse(localStorage.getItem('ls_personas')) || [],
     kanban: JSON.parse(localStorage.getItem('ls_kanban')) || [
-        { id: 1, title: "Backlog Estratégia", tasks: [
-            { id: 101, title: "Curadoria de fotos Campinas (Maio)", responsavel: "Design & Arte", priority: "baixa", prazo: "2024-05-10", tags: ["Fotografia", "Unidade SP"], comments: [], files: [] },
-            { id: 102, title: "Revisão de Bio & Linktree Instagram", responsavel: "Equipe Marketing", priority: "media", prazo: "2024-05-12", tags: ["Redes Sociais"], comments: [], files: [] }
-        ] },
-        { id: 2, title: "A Fazer", tasks: [
-            { id: 103, title: "Criação de Artes: Dia das Mães", responsavel: "Social Media", priority: "alta", prazo: "2024-05-08", tags: ["Instagram", "Campanha"], comments: [], files: [] },
-            { id: 105, title: "Copywriting para o Blog (Artigo Junho)", responsavel: "Copywriting", priority: "media", prazo: "2024-05-20", tags: ["Blog", "SEO"], comments: [], files: [] }
-        ] },
-        { id: 3, title: "Em Produção", tasks: [
-            { id: 104, title: "Webinar: Cuidados Paliativos & Apoio", responsavel: "Equipe Marketing", priority: "alta", prazo: "2024-05-15", tags: ["Eventos", "Webinar"], comments: [], files: [] }
-        ] },
-        { id: 4, title: "Concluído", tasks: [
-            { id: 106, title: "Relatório de Tráfego: Abril", responsavel: "Tráfego Pago", priority: "media", prazo: "2024-04-30", tags: ["Analytics", "Ads"], comments: [], files: [] }
-        ] }
+        { id: 1, title: "Backlog Estratégia", tasks: [] },
+        { id: 2, title: "A Fazer", tasks: [] },
+        { id: 3, title: "Em Produção", tasks: [] },
+        { id: 4, title: "Concluído", tasks: [] }
     ],
     calendarRules: JSON.parse(localStorage.getItem('ls_cal_rules')) || [],
     calendarTasks: JSON.parse(localStorage.getItem('ls_cal_tasks')) || [],

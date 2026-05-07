@@ -530,7 +530,7 @@ export const Templates = {
                 }),
                 ...manual.map(m => ({ ...m, source: 'manual', isCompleted: m.completed })),
                 ...kanbanFiltered.map(k => {
-                    const isCompleted = state.kanban[3].tasks.some(t => String(t.id) === String(k.id));
+                    const isCompleted = state.kanban?.[3]?.tasks?.some(t => String(t.id) === String(k.id)) || false;
                     return { title: k.title, type: k.type || 'post', source: 'kanban', id: k.id, isCompleted };
                 })
             ];
