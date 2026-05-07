@@ -40,8 +40,6 @@ const DriveManager = {
                         console.error("Erro ao inicializar Google Drive:", e);
                     }
                 });
-            } else {
-                setTimeout(check, 100);
             }
         };
         check();
@@ -50,36 +48,49 @@ const DriveManager = {
     async syncWithCloud() {
         if (!window.accessToken) return;
         try {
+            console.log("Iniciando sincronização com Google Drive...");
             const rootId = await this.getOrCreateFolder('LifeStars_MarketingOS');
+            console.log("Pasta raiz encontrada/criada:", rootId);
+
             const query = `name = '${DB_FILENAME}' and '${rootId}' in parents and trashed = false`;
-            const listUrl = `https://www.googleapis.com/drive/v3/files?q=${encodeURIComponent(query)}&fields=files(id)`;
+            const listUrl = `https://www.googleapis.com/drive/v3/files?q=${encodeURIComponent(query)}&fields=files(id, name)`;
             
             const response = await fetch(listUrl, {
                 headers: { 'Authorization': 'Bearer ' + window.accessToken }
             });
             const listData = await response.json();
+            console.log("Busca de arquivo de estado:", listData);
 
             if (listData.files && listData.files.length > 0) {
                 const fileId = listData.files[0].id;
+                console.log("Arquivo de estado encontrado! Baixando dados...");
                 const fileResp = await fetch(`https://www.googleapis.com/drive/v3/files/${fileId}?alt=media`, {
                     headers: { 'Authorization': 'Bearer ' + window.accessToken }
                 });
                 const cloudData = await fileResp.json();
                 
+                // Mapear dados da nuvem para o estado local
                 Object.keys(cloudData).forEach(key => {
-                    if (key !== 'save' && key !== 'activePage') {
+                    if (typeof cloudData[key] !== 'function') {
                         State[key] = cloudData[key];
                     }
                 });
-                console.log("Cloud data synced successfully");
+                console.log("Sincronização concluída: Dados da nuvem carregados.");
+                renderPage(State.activePage || 'dashboard');
             } else {
-                await this.saveStateToCloud();
+                console.log("Arquivo de estado não encontrado no Drive.");
+                // Só salva se o estado local não estiver vazio (para não apagar dados por engano)
+                if (State.leads.length > 0 || State.clients.length > 0) {
+                    console.log("Estado local possui dados. Fazendo upload inicial...");
+                    await this.saveStateToCloud();
+                } else {
+                    console.log("Estado local vazio. Aguardando entrada de dados.");
+                }
             }
         } catch (err) {
-            console.error("Erro na sincronização:", err);
+            console.error("Erro crítico na sincronização:", err);
         }
     },
-
     async saveStateToCloud() {
         if (!window.accessToken) return;
         try {
@@ -354,6 +365,29 @@ window.saveUserProfile = () => {
     State.save();
     updateSidebarProfile();
     alert("Perfil atualizado com sucesso!");
+};
+
+window.forceSync = async () => {
+    if (!window.accessToken) {
+        alert("Por favor, conecte o Google Drive primeiro.");
+        return;
+    }
+
+    const btn = document.querySelector('button[onclick="window.forceSync()"]');
+    const originalText = btn.textContent;
+    btn.textContent = "Sincronizando...";
+    btn.disabled = true;
+
+    try {
+        await DriveManager.saveStateToCloud();
+        alert("Dados sincronizados com sucesso no Google Drive!");
+    } catch (e) {
+        console.error(e);
+        alert("Erro ao sincronizar. Verifique o console.");
+    } finally {
+        btn.textContent = originalText;
+        btn.disabled = false;
+    }
 };
 
 function showConfirm(title, message, onConfirm) {

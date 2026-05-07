@@ -759,6 +759,13 @@ export const Templates = {
                         `}
                     </div>
                 </div>
+                <div class="settings-row" style="padding: 20px 0; border-bottom: 1px solid var(--border-color);">
+                    <div class="settings-info">
+                        <span class="settings-label">Sincronização Forçada</span>
+                        <span class="settings-desc">Enviar dados locais para o Drive manualmente (útil para migrar do localhost)</span>
+                    </div>
+                    <button class="btn btn-secondary" onclick="window.forceSync()">Sincronizar Agora</button>
+                </div>
                 <div class="settings-row" style="padding: 20px 0;">
                     <div class="settings-info">
                         <span class="settings-label">Sincronização Ativa</span>
